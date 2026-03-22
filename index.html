@@ -1,0 +1,1035 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Lean Bulk Plan – Tracker</title>
+<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=DM+Sans:wght@300;400;500;600;700&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/feather-icons/4.29.0/feather.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+<style>
+:root{
+  --bg:#0d0f0e;--surface:#141714;--card:#1a1d1a;--border:#2a2f2a;
+  --accent:#b5f23d;--accent2:#f2a83d;--accent3:#3db8f2;--accent4:#b07ef2;
+  --danger:#f25c3d;--muted:#6b7368;--text:#e8ede8;--text-soft:#a8b0a5;
+}
+*{margin:0;padding:0;box-sizing:border-box;}
+body{background:var(--bg);color:var(--text);font-family:'DM Sans',sans-serif;font-size:15px;line-height:1.7;overflow-x:hidden;}
+
+/* FEATHER ICON SIZING */
+.icon{display:inline-flex;align-items:center;justify-content:center;flex-shrink:0;}
+.icon svg{stroke-width:1.8;}
+.ic-xs svg{width:13px;height:13px;}
+.ic-sm svg{width:15px;height:15px;}
+.ic-md svg{width:18px;height:18px;}
+.ic-lg svg{width:22px;height:22px;}
+.ic-xl svg{width:28px;height:28px;}
+
+/* NAV */
+.top-nav{position:sticky;top:0;z-index:100;background:rgba(13,15,14,.96);backdrop-filter:blur(12px);border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;padding:0 32px;}
+.nav-brand{font-family:'Bebas Neue',sans-serif;font-size:22px;letter-spacing:2px;color:var(--accent);padding:14px 0;display:flex;align-items:center;gap:8px;}
+.nav-tabs{display:flex;gap:4px;}
+.nav-tab{padding:10px 20px;border-radius:8px;font-size:13px;font-weight:600;cursor:pointer;color:var(--text-soft);border:none;background:none;transition:all .2s;letter-spacing:.5px;display:flex;align-items:center;gap:7px;}
+.nav-tab svg{stroke:currentColor;}
+.nav-tab.active{background:rgba(181,242,61,.12);color:var(--accent);}
+.nav-tab:hover:not(.active){background:rgba(255,255,255,.05);color:var(--text);}
+
+/* PAGES */
+.page{display:none;}.page.active{display:block;}
+
+/* HEADER */
+header{position:relative;background:linear-gradient(135deg,#0d0f0e 0%,#111a0e 60%,#0d1a0d 100%);border-bottom:1px solid var(--border);padding:52px 40px 44px;overflow:hidden;}
+header::before{content:'';position:absolute;top:-80px;right:-80px;width:400px;height:400px;border-radius:50%;background:radial-gradient(circle,rgba(181,242,61,.10) 0%,transparent 70%);pointer-events:none;}
+.header-tag{display:inline-flex;align-items:center;gap:6px;background:rgba(181,242,61,.12);color:var(--accent);border:1px solid rgba(181,242,61,.25);border-radius:4px;font-family:'DM Mono',monospace;font-size:11px;letter-spacing:2px;text-transform:uppercase;padding:4px 12px;margin-bottom:18px;}
+header h1{font-family:'Bebas Neue',sans-serif;font-size:clamp(48px,8vw,88px);letter-spacing:3px;line-height:.9;margin-bottom:14px;}
+header h1 span{color:var(--accent);}
+.header-sub{font-size:15px;color:var(--text-soft);max-width:520px;margin-bottom:28px;}
+.stats-row{display:flex;flex-wrap:wrap;gap:10px;}
+.stat-chip{background:var(--card);border:1px solid var(--border);border-radius:8px;padding:7px 14px;font-size:13px;display:flex;align-items:center;gap:7px;}
+.stat-chip .dot{width:7px;height:7px;border-radius:50%;background:var(--accent);flex-shrink:0;}
+.stat-chip strong{color:var(--accent);}
+
+/* LAYOUT */
+.container{max-width:980px;margin:0 auto;padding:0 24px 80px;}
+
+/* SECTION HEADERS */
+.section-header{display:flex;align-items:center;gap:14px;margin:48px 0 22px;}
+.section-num{font-family:'DM Mono',monospace;font-size:12px;color:var(--accent);background:rgba(181,242,61,.1);border:1px solid rgba(181,242,61,.2);border-radius:4px;padding:3px 9px;flex-shrink:0;}
+.section-title{font-family:'Bebas Neue',sans-serif;font-size:30px;letter-spacing:1.5px;line-height:1;}
+.section-divider{flex:1;height:1px;background:var(--border);}
+
+/* CARD */
+.card{background:var(--card);border:1px solid var(--border);border-radius:12px;padding:24px;margin-bottom:16px;}
+.card-title{font-size:12px;font-weight:700;text-transform:uppercase;letter-spacing:1.2px;color:var(--muted);margin-bottom:14px;}
+
+/* CALORIE HERO */
+.calorie-hero{background:linear-gradient(135deg,#1a2410 0%,#141a10 100%);border:1px solid rgba(181,242,61,.25);border-radius:16px;padding:32px;text-align:center;margin-bottom:18px;}
+.calorie-big{font-family:'Bebas Neue',sans-serif;font-size:80px;color:var(--accent);line-height:1;letter-spacing:2px;}
+.calorie-label{font-size:13px;color:var(--text-soft);letter-spacing:2px;text-transform:uppercase;margin-bottom:4px;}
+.calorie-note{font-size:13px;color:var(--muted);margin-top:8px;}
+
+/* MACROS */
+.macro-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:14px;margin-bottom:18px;}
+.macro-card{background:var(--card);border:1px solid var(--border);border-radius:12px;padding:20px;text-align:center;}
+.macro-value{font-family:'Bebas Neue',sans-serif;font-size:44px;line-height:1;margin-bottom:4px;}
+.macro-unit{font-size:16px;}
+.macro-name{font-size:11px;text-transform:uppercase;letter-spacing:2px;color:var(--muted);margin-bottom:10px;}
+.macro-bar-bg{height:4px;background:var(--border);border-radius:2px;overflow:hidden;}
+.macro-bar-fill{height:100%;border-radius:2px;}
+.protein-color{color:#f2a83d;}.carb-color{color:#3db8f2;}.fat-color{color:#b07ef2;}
+.protein-fill{background:#f2a83d;width:48%;}.carb-fill{background:#3db8f2;width:77%;}.fat-fill{background:#b07ef2;width:28%;}
+
+/* MEAL TABS */
+.day-tabs{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:18px;}
+.day-tab{background:var(--card);border:1px solid var(--border);border-radius:8px;padding:7px 16px;font-size:13px;font-weight:600;cursor:pointer;color:var(--text-soft);transition:all .2s;user-select:none;}
+.day-tab.active,.day-tab:hover{background:rgba(181,242,61,.12);border-color:var(--accent);color:var(--accent);}
+.meal-plan{display:none;}.meal-plan.active{display:grid;grid-template-columns:1fr 1fr;gap:14px;}
+.meal-card{background:var(--card);border:1px solid var(--border);border-radius:12px;padding:20px;}
+.meal-card.full-width{grid-column:1/-1;}
+.meal-time{font-family:'DM Mono',monospace;font-size:11px;color:var(--accent);text-transform:uppercase;letter-spacing:1.5px;margin-bottom:4px;display:flex;align-items:center;gap:5px;}
+.meal-name{font-size:15px;font-weight:700;margin-bottom:10px;}
+.meal-item{display:flex;justify-content:space-between;align-items:center;padding:4px 0;border-bottom:1px solid rgba(255,255,255,.04);font-size:13px;}
+.meal-item:last-child{border-bottom:none;}
+.meal-item .qty{font-family:'DM Mono',monospace;font-size:11px;color:var(--muted);flex-shrink:0;margin-left:8px;}
+.meal-kcal{display:inline-flex;align-items:center;gap:5px;margin-top:10px;font-family:'DM Mono',monospace;font-size:11px;background:rgba(181,242,61,.08);color:var(--accent);border:1px solid rgba(181,242,61,.15);border-radius:4px;padding:2px 8px;}
+
+/* FOOD GRID */
+.food-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:12px;}
+.food-item{background:var(--card);border:1px solid var(--border);border-radius:10px;padding:16px;}
+.food-icon-wrap{width:40px;height:40px;border-radius:10px;background:rgba(181,242,61,.08);border:1px solid rgba(181,242,61,.15);display:flex;align-items:center;justify-content:center;margin-bottom:10px;}
+.food-icon-wrap svg{width:18px;height:18px;stroke:#b5f23d;}
+.food-name{font-weight:600;font-size:14px;margin-bottom:2px;}
+.food-macro{font-family:'DM Mono',monospace;font-size:11px;color:var(--muted);margin-bottom:2px;}
+.food-price{font-size:12px;color:var(--accent);font-weight:600;}
+
+/* TIMING */
+.timing-grid{display:grid;grid-template-columns:1fr 1fr;gap:14px;}
+.timing-card{background:var(--card);border:1px solid var(--border);border-radius:12px;padding:20px;}
+.timing-label{font-family:'Bebas Neue',sans-serif;font-size:18px;letter-spacing:1px;margin-bottom:10px;display:flex;align-items:center;gap:8px;}
+.timing-badge{font-family:'DM Sans',sans-serif;font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:1px;padding:2px 8px;border-radius:4px;}
+.pre-badge{background:rgba(242,168,61,.15);color:var(--accent2);border:1px solid rgba(242,168,61,.25);}
+.post-badge{background:rgba(61,184,242,.15);color:var(--accent3);border:1px solid rgba(61,184,242,.25);}
+.timing-item{padding:6px 0;border-bottom:1px solid rgba(255,255,255,.05);font-size:13px;display:flex;align-items:flex-start;gap:8px;}
+.timing-item .ti-icon{flex-shrink:0;margin-top:3px;color:var(--muted);}
+.timing-item:last-child{border-bottom:none;}
+
+/* SUPPLEMENTS */
+.supp-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(230px,1fr));gap:12px;}
+.supp-card{background:var(--card);border:1px solid var(--border);border-radius:12px;padding:20px;position:relative;}
+.supp-priority{position:absolute;top:14px;right:14px;font-size:10px;font-family:'DM Mono',monospace;text-transform:uppercase;letter-spacing:1px;padding:2px 8px;border-radius:4px;}
+.must{background:rgba(181,242,61,.12);color:var(--accent);border:1px solid rgba(181,242,61,.2);}
+.optional{background:rgba(255,255,255,.05);color:var(--muted);border:1px solid var(--border);}
+.supp-icon{width:36px;height:36px;border-radius:9px;display:flex;align-items:center;justify-content:center;margin-bottom:10px;}
+.supp-name{font-weight:700;font-size:14px;margin-bottom:4px;}
+.supp-dose{font-family:'DM Mono',monospace;font-size:12px;color:var(--accent2);margin-bottom:6px;}
+.supp-desc{font-size:13px;color:var(--text-soft);}
+
+/* MISTAKES */
+.mistake-list{display:grid;gap:10px;}
+.mistake-item{background:var(--card);border:1px solid var(--border);border-left:3px solid #f25c3d;border-radius:0 10px 10px 0;padding:14px 18px;display:flex;gap:12px;align-items:flex-start;}
+.mistake-icon-box{width:36px;height:36px;border-radius:8px;background:rgba(242,92,61,.1);border:1px solid rgba(242,92,61,.2);display:flex;align-items:center;justify-content:center;flex-shrink:0;}
+.mistake-icon-box svg{width:16px;height:16px;stroke:#f25c3d;}
+.mistake-title{font-weight:700;font-size:14px;margin-bottom:2px;}
+.mistake-desc{font-size:13px;color:var(--text-soft);}
+
+/* TIMELINE */
+.timeline{position:relative;padding-left:26px;}
+.timeline::before{content:'';position:absolute;left:7px;top:6px;bottom:6px;width:2px;background:var(--border);}
+.timeline-item{position:relative;margin-bottom:22px;}
+.timeline-item::before{content:'';position:absolute;left:-23px;top:7px;width:10px;height:10px;border-radius:50%;background:var(--accent);border:2px solid var(--bg);}
+.timeline-period{font-family:'DM Mono',monospace;font-size:12px;color:var(--accent);text-transform:uppercase;letter-spacing:1px;margin-bottom:2px;}
+.timeline-title{font-weight:700;font-size:15px;margin-bottom:4px;}
+.timeline-desc{font-size:13px;color:var(--text-soft);}
+.timeline-gain{display:inline-flex;align-items:center;gap:5px;margin-top:5px;font-family:'DM Mono',monospace;font-size:11px;background:rgba(181,242,61,.1);color:var(--accent);border:1px solid rgba(181,242,61,.2);border-radius:4px;padding:2px 10px;}
+
+/* WEEK TABLE */
+.week-table{width:100%;border-collapse:collapse;font-size:13px;}
+.week-table th{background:rgba(181,242,61,.08);color:var(--accent);font-family:'DM Mono',monospace;font-size:11px;text-transform:uppercase;letter-spacing:1px;padding:11px 14px;text-align:left;border-bottom:1px solid var(--border);}
+.week-table td{padding:10px 14px;border-bottom:1px solid rgba(255,255,255,.04);color:var(--text-soft);}
+.week-table tr:last-child td{border-bottom:none;}
+.week-table td:first-child{color:var(--text);font-weight:600;width:70px;}
+
+/* ── TRACKER PAGE ── */
+.tracker-header{background:linear-gradient(135deg,#0d0f0e 0%,#0e110f 100%);border-bottom:1px solid var(--border);padding:36px 40px 28px;}
+.tracker-header h2{font-family:'Bebas Neue',sans-serif;font-size:48px;letter-spacing:2px;line-height:1;margin-bottom:6px;}
+.tracker-header h2 span{color:var(--accent);}
+.tracker-subtitle{font-size:14px;color:var(--text-soft);}
+
+/* DOWNLOAD BUTTONS */
+.dl-bar{display:flex;gap:10px;margin-top:18px;flex-wrap:wrap;}
+.dl-btn{display:inline-flex;align-items:center;gap:7px;padding:9px 18px;border-radius:8px;font-size:13px;font-weight:600;cursor:pointer;transition:all .2s;border:none;}
+.dl-btn svg{width:15px;height:15px;flex-shrink:0;}
+.dl-pdf{background:rgba(242,92,61,.12);border:1px solid rgba(242,92,61,.3);color:#f25c3d;}
+.dl-pdf:hover{background:rgba(242,92,61,.22);transform:translateY(-1px);}
+.dl-img{background:rgba(61,184,242,.12);border:1px solid rgba(61,184,242,.3);color:var(--accent3);}
+.dl-img:hover{background:rgba(61,184,242,.22);transform:translateY(-1px);}
+.dl-btn.loading{opacity:.6;pointer-events:none;}
+
+/* DATE BAR */
+.date-bar{display:flex;align-items:center;gap:12px;background:var(--card);border:1px solid var(--border);border-radius:12px;padding:12px 18px;margin-bottom:20px;}
+.date-nav-btn{width:32px;height:32px;border-radius:8px;background:var(--surface);border:1px solid var(--border);color:var(--text);font-size:16px;cursor:pointer;display:flex;align-items:center;justify-content:center;transition:all .15s;}
+.date-nav-btn:hover{background:rgba(181,242,61,.1);border-color:var(--accent);color:var(--accent);}
+.date-label{font-family:'DM Mono',monospace;font-size:13px;font-weight:500;flex:1;text-align:center;display:flex;align-items:center;justify-content:center;gap:6px;}
+.today-btn{font-family:'DM Mono',monospace;font-size:11px;padding:4px 12px;background:rgba(181,242,61,.1);border:1px solid rgba(181,242,61,.25);color:var(--accent);border-radius:6px;cursor:pointer;transition:all .15s;}
+.today-btn:hover{background:rgba(181,242,61,.2);}
+
+/* PROGRESS RINGS */
+.targets-strip{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-bottom:20px;}
+.target-card{background:var(--card);border:1px solid var(--border);border-radius:12px;padding:16px;text-align:center;}
+.target-label{font-family:'DM Mono',monospace;font-size:10px;text-transform:uppercase;letter-spacing:1px;color:var(--muted);margin-bottom:8px;display:flex;align-items:center;justify-content:center;gap:4px;}
+.target-label svg{width:11px;height:11px;}
+.ring-wrap{position:relative;width:70px;height:70px;margin:0 auto 4px;}
+svg.ring{transform:rotate(-90deg);}
+.ring-bg{fill:none;stroke:var(--border);}
+.ring-fill{fill:none;stroke-linecap:round;transition:stroke-dashoffset .5s ease;}
+.ring-label{position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);font-family:'Bebas Neue',sans-serif;font-size:16px;line-height:1;}
+.target-max{font-size:11px;color:var(--muted);margin-top:2px;}
+.target-pct{font-family:'DM Mono',monospace;font-size:11px;margin-top:5px;padding:2px 6px;border-radius:4px;display:inline-block;}
+
+/* WATER */
+.water-section{background:var(--card);border:1px solid var(--border);border-radius:12px;padding:20px;margin-bottom:20px;}
+.water-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:14px;}
+.water-title{font-weight:700;font-size:15px;display:flex;align-items:center;gap:8px;}
+.water-title svg{width:16px;height:16px;stroke:var(--accent3);}
+.water-count{font-family:'DM Mono',monospace;font-size:13px;color:var(--accent3);}
+.water-glasses{display:flex;gap:8px;flex-wrap:wrap;}
+.glass-btn{width:46px;height:56px;border-radius:8px;border:1.5px solid var(--border);background:var(--surface);cursor:pointer;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px;transition:all .2s;position:relative;overflow:hidden;}
+.glass-fill{position:absolute;bottom:0;left:0;right:0;background:rgba(61,184,242,.3);transition:height .3s;border-radius:0 0 6px 6px;}
+.glass-btn.filled{border-color:var(--accent3);background:rgba(61,184,242,.15);}
+.glass-icon{position:relative;z-index:1;display:flex;flex-direction:column;align-items:center;gap:2px;}
+.glass-icon svg{width:18px;height:18px;}
+.glass-icon span{font-family:'DM Mono',monospace;font-size:9px;color:var(--muted);}
+.glass-btn.filled .glass-icon svg{stroke:var(--accent3);}
+
+/* LOG GRID */
+.log-grid{display:grid;grid-template-columns:1fr 340px;gap:20px;align-items:start;}
+.add-food-panel{background:var(--card);border:1px solid var(--border);border-radius:12px;padding:22px;position:sticky;top:68px;}
+.panel-title{font-family:'Bebas Neue',sans-serif;font-size:22px;letter-spacing:1px;margin-bottom:16px;display:flex;align-items:center;gap:8px;}
+.panel-title svg{width:18px;height:18px;stroke:var(--accent);}
+.form-row{margin-bottom:12px;}
+.form-label{font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:1px;color:var(--muted);margin-bottom:5px;display:flex;align-items:center;gap:5px;}
+.form-label svg{width:12px;height:12px;}
+.form-input{width:100%;background:var(--surface);border:1px solid var(--border);border-radius:8px;padding:9px 13px;color:var(--text);font-family:'DM Sans',sans-serif;font-size:14px;transition:border-color .2s;outline:none;}
+.form-input:focus{border-color:var(--accent);}
+.form-input::placeholder{color:var(--muted);}
+.macro-inputs{display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;}
+.add-btn{width:100%;padding:11px;background:var(--accent);color:#0d0f0e;border:none;border-radius:8px;font-weight:700;font-size:14px;cursor:pointer;transition:all .2s;margin-top:4px;display:flex;align-items:center;justify-content:center;gap:7px;}
+.add-btn svg{width:15px;height:15px;stroke:#0d0f0e;}
+.add-btn:hover{background:#c9ff5a;transform:translateY(-1px);}
+.section-mini{font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:1px;color:var(--muted);margin:16px 0 8px;display:flex;align-items:center;gap:5px;}
+.section-mini svg{width:12px;height:12px;}
+.quick-chips{display:flex;flex-wrap:wrap;gap:6px;}
+.quick-chip{font-size:11px;padding:5px 10px;border:1px solid var(--border);border-radius:6px;background:var(--surface);cursor:pointer;color:var(--text-soft);transition:all .15s;white-space:nowrap;display:flex;align-items:center;gap:5px;}
+.quick-chip svg{width:11px;height:11px;flex-shrink:0;}
+.quick-chip:hover{border-color:var(--accent);color:var(--accent);background:rgba(181,242,61,.08);}
+
+/* FOOD LOG LIST */
+.food-log-panel{background:var(--card);border:1px solid var(--border);border-radius:12px;padding:20px;}
+.food-log-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:14px;}
+.food-log-title{font-weight:700;font-size:15px;display:flex;align-items:center;gap:7px;}
+.food-log-title svg{width:16px;height:16px;stroke:var(--accent);}
+.clear-btn{font-size:11px;padding:4px 10px;border:1px solid var(--border);background:none;color:var(--danger);border-radius:6px;cursor:pointer;transition:all .15s;display:flex;align-items:center;gap:5px;}
+.clear-btn svg{width:12px;height:12px;stroke:var(--danger);}
+.clear-btn:hover{background:rgba(242,92,61,.1);border-color:var(--danger);}
+.log-empty{text-align:center;padding:32px;color:var(--muted);font-size:14px;display:flex;flex-direction:column;align-items:center;gap:8px;}
+.log-empty svg{width:32px;height:32px;stroke:var(--border);}
+.log-entry{display:grid;grid-template-columns:1fr auto;align-items:center;gap:12px;padding:11px 0;border-bottom:1px solid rgba(255,255,255,.05);}
+.log-entry:last-child{border-bottom:none;}
+.log-food-name{font-weight:600;font-size:14px;margin-bottom:3px;}
+.log-macros{font-family:'DM Mono',monospace;font-size:11px;display:flex;gap:8px;flex-wrap:wrap;}
+.log-macros span{padding:1px 6px;border-radius:4px;}
+.lk{background:rgba(181,242,61,.08);color:var(--accent);border:1px solid rgba(181,242,61,.15);}
+.lp{background:rgba(242,168,61,.08);color:var(--accent2);border:1px solid rgba(242,168,61,.15);}
+.lc{background:rgba(61,184,242,.08);color:var(--accent3);border:1px solid rgba(61,184,242,.15);}
+.lf{background:rgba(176,126,242,.08);color:var(--accent4);border:1px solid rgba(176,126,242,.15);}
+.delete-btn{width:28px;height:28px;border-radius:6px;border:1px solid var(--border);background:none;color:var(--muted);cursor:pointer;display:flex;align-items:center;justify-content:center;transition:all .15s;}
+.delete-btn svg{width:13px;height:13px;stroke:currentColor;}
+.delete-btn:hover{background:rgba(242,92,61,.1);border-color:var(--danger);color:var(--danger);}
+
+/* CHARTS */
+.charts-grid{display:grid;grid-template-columns:1fr 1fr;gap:20px;margin-top:20px;}
+.chart-card{background:var(--card);border:1px solid var(--border);border-radius:12px;padding:22px;}
+.chart-title{font-weight:700;font-size:15px;margin-bottom:3px;display:flex;align-items:center;gap:7px;}
+.chart-title svg{width:15px;height:15px;stroke:var(--accent);}
+.chart-sub{font-size:12px;color:var(--muted);margin-bottom:16px;}
+.doughnut-wrap{position:relative;height:200px;display:flex;align-items:center;justify-content:center;}
+.doughnut-center{position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);text-align:center;pointer-events:none;}
+.doughnut-kcal-num{font-family:'Bebas Neue',sans-serif;font-size:30px;color:var(--text);line-height:1;}
+.doughnut-sub{font-size:10px;color:var(--muted);text-transform:uppercase;letter-spacing:1px;}
+.macro-legend{display:flex;justify-content:center;gap:14px;margin-top:12px;flex-wrap:wrap;}
+.legend-item{display:flex;align-items:center;gap:5px;font-size:12px;color:var(--text-soft);}
+.legend-dot{width:9px;height:9px;border-radius:50%;flex-shrink:0;}
+.weekly-stats{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-top:14px;}
+.weekly-stat{background:var(--surface);border:1px solid var(--border);border-radius:8px;padding:10px;text-align:center;}
+.ws-value{font-family:'Bebas Neue',sans-serif;font-size:24px;line-height:1;}
+.ws-label{font-size:10px;color:var(--muted);text-transform:uppercase;letter-spacing:1px;margin-top:2px;}
+
+/* FOOTER */
+footer{border-top:1px solid var(--border);padding:28px 40px;text-align:center;font-size:12px;color:var(--muted);}
+
+/* LOADING OVERLAY */
+.dl-overlay{display:none;position:fixed;inset:0;background:rgba(13,15,14,.85);z-index:999;align-items:center;justify-content:center;flex-direction:column;gap:14px;backdrop-filter:blur(6px);}
+.dl-overlay.show{display:flex;}
+.dl-spinner{width:40px;height:40px;border:3px solid var(--border);border-top-color:var(--accent);border-radius:50%;animation:spin .8s linear infinite;}
+@keyframes spin{to{transform:rotate(360deg);}}
+.dl-msg{font-family:'DM Mono',monospace;font-size:13px;color:var(--text-soft);}
+
+@media(max-width:768px){
+  .top-nav{padding:0 16px;}
+  header,.tracker-header{padding:32px 20px 26px;}
+  .container{padding:0 16px 60px;}
+  .macro-grid{grid-template-columns:1fr;}
+  .meal-plan.active{grid-template-columns:1fr;}
+  .meal-card.full-width{grid-column:auto;}
+  .timing-grid{grid-template-columns:1fr;}
+  .targets-strip{grid-template-columns:1fr 1fr;}
+  .log-grid{grid-template-columns:1fr;}
+  .add-food-panel{position:static;}
+  .charts-grid{grid-template-columns:1fr;}
+}
+</style>
+</head>
+<body>
+
+<!-- LOADING OVERLAY -->
+<div class="dl-overlay" id="dl-overlay">
+  <div class="dl-spinner"></div>
+  <div class="dl-msg" id="dl-msg">Preparing download…</div>
+</div>
+
+<!-- NAV -->
+<nav class="top-nav">
+  <div class="nav-brand">
+    <i data-feather="trending-up" style="width:20px;height:20px;stroke:var(--accent)"></i>
+    LEAN BULK
+  </div>
+  <div class="nav-tabs">
+    <button class="nav-tab active" onclick="showPage('plan',this)">
+      <i data-feather="clipboard"></i> Plan
+    </button>
+    <button class="nav-tab" onclick="showPage('tracker',this)">
+      <i data-feather="bar-chart-2"></i> Tracker
+    </button>
+  </div>
+</nav>
+
+<!-- ══════════ PAGE: PLAN ══════════ -->
+<div class="page active" id="page-plan">
+<header>
+  <div class="header-tag"><i data-feather="activity" style="width:11px;height:11px"></i> Personalised Plan · 2025</div>
+  <h1>LEAN<br><span>BULK</span><br>PLAN</h1>
+  <p class="header-sub">A certified nutrition guide tailored to your body — eggitarian, budget-friendly, Indian diet-focused.</p>
+  <div class="stats-row">
+    <div class="stat-chip"><span class="dot"></span>Age: <strong>20 yrs</strong></div>
+    <div class="stat-chip"><span class="dot"></span>Weight: <strong>57 kg</strong></div>
+    <div class="stat-chip"><span class="dot"></span>Height: <strong>5′10″</strong></div>
+    <div class="stat-chip"><span class="dot"></span>Level: <strong>Beginner</strong></div>
+    <div class="stat-chip"><span class="dot"></span>Diet: <strong>Eggitarian</strong></div>
+    <div class="stat-chip"><span class="dot"></span>Goal: <strong>Lean Bulk</strong></div>
+  </div>
+</header>
+<div class="container">
+  <!-- 01 CALORIES -->
+  <div class="section-header"><span class="section-num">01</span><span class="section-title">Calories &amp; Macros</span><div class="section-divider"></div></div>
+  <div class="calorie-hero">
+    <div class="calorie-label">Daily Target Calories</div>
+    <div class="calorie-big">2,450</div>
+    <div style="font-size:14px;color:var(--text-soft);margin-top:4px;">kcal / day</div>
+    <div class="calorie-note">BMR ≈ 1,586 kcal &nbsp;·&nbsp; TDEE ≈ 2,180 kcal &nbsp;·&nbsp; +270 kcal lean surplus</div>
+  </div>
+  <div class="macro-grid">
+    <div class="macro-card"><div class="macro-value protein-color">120<span class="macro-unit">g</span></div><div class="macro-name">Protein · 480 kcal</div><div class="macro-bar-bg"><div class="macro-bar-fill protein-fill"></div></div><p style="font-size:12px;color:var(--muted);margin-top:8px;">2.1g per kg bodyweight. Priority #1 for muscle repair &amp; growth.</p></div>
+    <div class="macro-card"><div class="macro-value carb-color">310<span class="macro-unit">g</span></div><div class="macro-name">Carbs · 1,240 kcal</div><div class="macro-bar-bg"><div class="macro-bar-fill carb-fill"></div></div><p style="font-size:12px;color:var(--muted);margin-top:8px;">Primary fuel for workouts and glycogen stores.</p></div>
+    <div class="macro-card"><div class="macro-value fat-color">81<span class="macro-unit">g</span></div><div class="macro-name">Fats · 730 kcal</div><div class="macro-bar-bg"><div class="macro-bar-fill fat-fill"></div></div><p style="font-size:12px;color:var(--muted);margin-top:8px;">Essential for testosterone, hormones and vitamin absorption.</p></div>
+  </div>
+  <div class="card"><div class="card-title">How to hit these numbers</div><div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;font-size:13px;">
+    <div style="display:flex;gap:8px;align-items:flex-start"><i data-feather="check-circle" style="width:14px;height:14px;stroke:var(--accent);flex-shrink:0;margin-top:3px"></i><span>Eat every 3–4 hours (4–5 meals/day)</span></div>
+    <div style="display:flex;gap:8px;align-items:flex-start"><i data-feather="check-circle" style="width:14px;height:14px;stroke:var(--accent);flex-shrink:0;margin-top:3px"></i><span>Include protein in every meal</span></div>
+    <div style="display:flex;gap:8px;align-items:flex-start"><i data-feather="check-circle" style="width:14px;height:14px;stroke:var(--accent);flex-shrink:0;margin-top:3px"></i><span>Track with the Tracker tab above</span></div>
+    <div style="display:flex;gap:8px;align-items:flex-start"><i data-feather="check-circle" style="width:14px;height:14px;stroke:var(--accent);flex-shrink:0;margin-top:3px"></i><span>Weigh yourself weekly (same day, morning)</span></div>
+    <div style="display:flex;gap:8px;align-items:flex-start"><i data-feather="check-circle" style="width:14px;height:14px;stroke:var(--accent);flex-shrink:0;margin-top:3px"></i><span>Aim +0.25–0.5 kg/week on scale</span></div>
+    <div style="display:flex;gap:8px;align-items:flex-start"><i data-feather="check-circle" style="width:14px;height:14px;stroke:var(--accent);flex-shrink:0;margin-top:3px"></i><span>Drink 3–4 litres of water daily</span></div>
+  </div></div>
+
+  <!-- 02 MEAL PLAN -->
+  <div class="section-header"><span class="section-num">02</span><span class="section-title">Daily Meal Plan</span><div class="section-divider"></div></div>
+  <div class="day-tabs">
+    <div class="day-tab active" onclick="switchDay('mon',this)">Mon</div>
+    <div class="day-tab" onclick="switchDay('tue',this)">Tue</div>
+    <div class="day-tab" onclick="switchDay('wed',this)">Wed</div>
+    <div class="day-tab" onclick="switchDay('thu',this)">Thu</div>
+    <div class="day-tab" onclick="switchDay('fri',this)">Fri</div>
+    <div class="day-tab" onclick="switchDay('sat',this)">Sat</div>
+    <div class="day-tab" onclick="switchDay('sun',this)">Sun</div>
+  </div>
+  <!-- MON -->
+  <div class="meal-plan active" id="day-mon">
+    <div class="meal-card"><div class="meal-time"><i data-feather="sunrise" style="width:11px;height:11px"></i>7:00 AM · Breakfast</div><div class="meal-name">Egg &amp; Oats Power Plate</div><div class="meal-item">Whole eggs<span class="qty">4 eggs</span></div><div class="meal-item">Rolled oats cooked<span class="qty">80g dry</span></div><div class="meal-item">Banana<span class="qty">1 medium</span></div><div class="meal-item">Milk full-fat<span class="qty">200ml</span></div><span class="meal-kcal"><i data-feather="zap" style="width:10px;height:10px"></i>~640 kcal · 38g P · 78g C · 18g F</span></div>
+    <div class="meal-card"><div class="meal-time"><i data-feather="coffee" style="width:11px;height:11px"></i>10:30 AM · Mid-Morning</div><div class="meal-name">Peanut Butter Toast</div><div class="meal-item">Whole wheat bread<span class="qty">2 slices</span></div><div class="meal-item">Peanut butter<span class="qty">2 tbsp</span></div><div class="meal-item">Apple<span class="qty">1 medium</span></div><span class="meal-kcal"><i data-feather="zap" style="width:10px;height:10px"></i>~380 kcal · 12g P · 48g C · 16g F</span></div>
+    <div class="meal-card"><div class="meal-time"><i data-feather="sun" style="width:11px;height:11px"></i>1:30 PM · Lunch</div><div class="meal-name">Dal + Rice + Sabzi</div><div class="meal-item">Cooked white rice<span class="qty">200g</span></div><div class="meal-item">Toor/Moong dal<span class="qty">150g cooked</span></div><div class="meal-item">Paneer / egg bhurji<span class="qty">100g / 3 eggs</span></div><div class="meal-item">Curd<span class="qty">100g</span></div><span class="meal-kcal"><i data-feather="zap" style="width:10px;height:10px"></i>~680 kcal · 35g P · 95g C · 14g F</span></div>
+    <div class="meal-card"><div class="meal-time"><i data-feather="clock" style="width:11px;height:11px"></i>5:00 PM · Pre-Workout</div><div class="meal-name">Banana + Boiled Eggs</div><div class="meal-item">Banana<span class="qty">2 medium</span></div><div class="meal-item">Boiled eggs<span class="qty">2 whole</span></div><span class="meal-kcal"><i data-feather="zap" style="width:10px;height:10px"></i>~280 kcal · 14g P · 40g C · 8g F</span></div>
+    <div class="meal-card full-width"><div class="meal-time"><i data-feather="moon" style="width:11px;height:11px"></i>8:00 PM · Dinner</div><div class="meal-name">Roti + Egg Curry + Salad</div><div class="meal-item">Whole wheat roti<span class="qty">4 medium</span></div><div class="meal-item">Egg curry (4 eggs)<span class="qty">1 bowl</span></div><div class="meal-item">Mixed salad<span class="qty">1 bowl</span></div><div class="meal-item">Ghee<span class="qty">1 tsp</span></div><span class="meal-kcal"><i data-feather="zap" style="width:10px;height:10px"></i>~570 kcal · 30g P · 60g C · 20g F</span></div>
+    <div class="meal-card full-width"><div class="meal-time"><i data-feather="moon" style="width:11px;height:11px"></i>10:30 PM · Before Bed</div><div class="meal-name">Milk + Sattu</div><div class="meal-item">Full-fat milk<span class="qty">300ml</span></div><div class="meal-item">Sattu powder<span class="qty">30g</span></div><span class="meal-kcal"><i data-feather="zap" style="width:10px;height:10px"></i>~310 kcal · 18g P · 28g C · 10g F</span></div>
+  </div>
+  <!-- TUE -->
+  <div class="meal-plan" id="day-tue">
+    <div class="meal-card"><div class="meal-time"><i data-feather="sunrise" style="width:11px;height:11px"></i>7:00 AM · Breakfast</div><div class="meal-name">Besan Chilla + Curd</div><div class="meal-item">Besan (chickpea flour)<span class="qty">100g</span></div><div class="meal-item">Veggies (onion, tomato)<span class="qty">mixed</span></div><div class="meal-item">Curd<span class="qty">150g</span></div><div class="meal-item">Eggs in batter<span class="qty">2 eggs</span></div><span class="meal-kcal"><i data-feather="zap" style="width:10px;height:10px"></i>~550 kcal · 34g P · 60g C · 14g F</span></div>
+    <div class="meal-card"><div class="meal-time"><i data-feather="coffee" style="width:11px;height:11px"></i>10:30 AM · Snack</div><div class="meal-name">Boiled Chana + Eggs</div><div class="meal-item">Boiled chickpeas<span class="qty">100g</span></div><div class="meal-item">Boiled eggs<span class="qty">3 eggs</span></div><span class="meal-kcal"><i data-feather="zap" style="width:10px;height:10px"></i>~370 kcal · 28g P · 30g C · 14g F</span></div>
+    <div class="meal-card"><div class="meal-time"><i data-feather="sun" style="width:11px;height:11px"></i>1:30 PM · Lunch</div><div class="meal-name">Rajma + Rice</div><div class="meal-item">Cooked rice<span class="qty">200g</span></div><div class="meal-item">Rajma curry<span class="qty">1.5 katori</span></div><div class="meal-item">Boiled eggs<span class="qty">2 eggs</span></div><div class="meal-item">Raita<span class="qty">100g</span></div><span class="meal-kcal"><i data-feather="zap" style="width:10px;height:10px"></i>~650 kcal · 38g P · 90g C · 13g F</span></div>
+    <div class="meal-card"><div class="meal-time"><i data-feather="clock" style="width:11px;height:11px"></i>5:00 PM · Pre-Workout</div><div class="meal-name">Oats + Honey</div><div class="meal-item">Oats cooked<span class="qty">60g dry</span></div><div class="meal-item">Honey<span class="qty">1 tbsp</span></div><div class="meal-item">Milk<span class="qty">150ml</span></div><span class="meal-kcal"><i data-feather="zap" style="width:10px;height:10px"></i>~330 kcal · 12g P · 55g C · 6g F</span></div>
+    <div class="meal-card full-width"><div class="meal-time"><i data-feather="moon" style="width:11px;height:11px"></i>8:00 PM · Dinner</div><div class="meal-name">Egg Fried Rice + Sabzi</div><div class="meal-item">Cooked rice<span class="qty">200g</span></div><div class="meal-item">Eggs<span class="qty">3 eggs</span></div><div class="meal-item">Mixed vegetables<span class="qty">100g</span></div><span class="meal-kcal"><i data-feather="zap" style="width:10px;height:10px"></i>~580 kcal · 28g P · 72g C · 18g F</span></div>
+    <div class="meal-card full-width"><div class="meal-time"><i data-feather="moon" style="width:11px;height:11px"></i>10:30 PM · Before Bed</div><div class="meal-name">Milk + Peanut Butter</div><div class="meal-item">Full-fat milk<span class="qty">300ml</span></div><div class="meal-item">Peanut butter<span class="qty">1.5 tbsp</span></div><span class="meal-kcal"><i data-feather="zap" style="width:10px;height:10px"></i>~310 kcal · 16g P · 24g C · 14g F</span></div>
+  </div>
+  <!-- WED -->
+  <div class="meal-plan" id="day-wed">
+    <div class="meal-card"><div class="meal-time"><i data-feather="sunrise" style="width:11px;height:11px"></i>7:00 AM · Breakfast</div><div class="meal-name">Egg Paratha + Milk</div><div class="meal-item">Egg paratha<span class="qty">3 parathas</span></div><div class="meal-item">Eggs inside<span class="qty">3 eggs</span></div><div class="meal-item">Milk<span class="qty">200ml</span></div><span class="meal-kcal"><i data-feather="zap" style="width:10px;height:10px"></i>~680 kcal · 36g P · 80g C · 22g F</span></div>
+    <div class="meal-card"><div class="meal-time"><i data-feather="coffee" style="width:11px;height:11px"></i>10:30 AM · Snack</div><div class="meal-name">Fruit + Peanuts</div><div class="meal-item">Banana<span class="qty">1 large</span></div><div class="meal-item">Roasted peanuts<span class="qty">50g</span></div><span class="meal-kcal"><i data-feather="zap" style="width:10px;height:10px"></i>~380 kcal · 14g P · 36g C · 18g F</span></div>
+    <div class="meal-card"><div class="meal-time"><i data-feather="sun" style="width:11px;height:11px"></i>1:30 PM · Lunch</div><div class="meal-name">Chole + Roti</div><div class="meal-item">Whole wheat roti<span class="qty">4 medium</span></div><div class="meal-item">Chole curry<span class="qty">1.5 katori</span></div><div class="meal-item">Boiled egg salad<span class="qty">2 eggs</span></div><span class="meal-kcal"><i data-feather="zap" style="width:10px;height:10px"></i>~620 kcal · 32g P · 85g C · 15g F</span></div>
+    <div class="meal-card"><div class="meal-time"><i data-feather="clock" style="width:11px;height:11px"></i>5:00 PM · Pre-Workout</div><div class="meal-name">Banana Shake</div><div class="meal-item">Banana<span class="qty">2 medium</span></div><div class="meal-item">Milk<span class="qty">250ml</span></div><div class="meal-item">Honey<span class="qty">1 tsp</span></div><span class="meal-kcal"><i data-feather="zap" style="width:10px;height:10px"></i>~320 kcal · 10g P · 56g C · 6g F</span></div>
+    <div class="meal-card full-width"><div class="meal-time"><i data-feather="moon" style="width:11px;height:11px"></i>8:00 PM · Dinner</div><div class="meal-name">Khichdi + Omelette</div><div class="meal-item">Moong dal khichdi<span class="qty">300g cooked</span></div><div class="meal-item">3-egg omelette with veggies<span class="qty">3 eggs</span></div><div class="meal-item">Ghee<span class="qty">1 tsp</span></div><span class="meal-kcal"><i data-feather="zap" style="width:10px;height:10px"></i>~560 kcal · 30g P · 70g C · 16g F</span></div>
+    <div class="meal-card full-width"><div class="meal-time"><i data-feather="moon" style="width:11px;height:11px"></i>10:30 PM · Before Bed</div><div class="meal-name">Haldi Doodh + Eggs</div><div class="meal-item">Milk with turmeric<span class="qty">300ml</span></div><div class="meal-item">Boiled eggs<span class="qty">2 eggs</span></div><span class="meal-kcal"><i data-feather="zap" style="width:10px;height:10px"></i>~310 kcal · 22g P · 18g C · 14g F</span></div>
+  </div>
+  <!-- THU -->
+  <div class="meal-plan" id="day-thu">
+    <div class="meal-card"><div class="meal-time"><i data-feather="sunrise" style="width:11px;height:11px"></i>7:00 AM · Breakfast</div><div class="meal-name">Dalia + Boiled Eggs</div><div class="meal-item">Broken wheat dalia<span class="qty">80g dry</span></div><div class="meal-item">Boiled eggs<span class="qty">4 eggs</span></div><div class="meal-item">Milk<span class="qty">200ml</span></div><span class="meal-kcal"><i data-feather="zap" style="width:10px;height:10px"></i>~620 kcal · 40g P · 70g C · 18g F</span></div>
+    <div class="meal-card"><div class="meal-time"><i data-feather="coffee" style="width:11px;height:11px"></i>10:30 AM · Snack</div><div class="meal-name">Bread Scramble</div><div class="meal-item">Whole wheat bread<span class="qty">2 slices</span></div><div class="meal-item">Scrambled eggs<span class="qty">3 eggs</span></div><span class="meal-kcal"><i data-feather="zap" style="width:10px;height:10px"></i>~340 kcal · 22g P · 30g C · 14g F</span></div>
+    <div class="meal-card"><div class="meal-time"><i data-feather="sun" style="width:11px;height:11px"></i>1:30 PM · Lunch</div><div class="meal-name">Rice + Sambar + Paneer</div><div class="meal-item">Cooked rice<span class="qty">200g</span></div><div class="meal-item">Sambar<span class="qty">1 katori</span></div><div class="meal-item">Paneer stir-fried<span class="qty">100g</span></div><div class="meal-item">Curd<span class="qty">100g</span></div><span class="meal-kcal"><i data-feather="zap" style="width:10px;height:10px"></i>~670 kcal · 36g P · 88g C · 17g F</span></div>
+    <div class="meal-card"><div class="meal-time"><i data-feather="clock" style="width:11px;height:11px"></i>5:00 PM · Pre-Workout</div><div class="meal-name">Dates + Milk</div><div class="meal-item">Dates<span class="qty">4–5 pieces</span></div><div class="meal-item">Milk<span class="qty">250ml</span></div><span class="meal-kcal"><i data-feather="zap" style="width:10px;height:10px"></i>~300 kcal · 10g P · 50g C · 6g F</span></div>
+    <div class="meal-card full-width"><div class="meal-time"><i data-feather="moon" style="width:11px;height:11px"></i>8:00 PM · Dinner</div><div class="meal-name">Roti + Egg Bhurji + Dal</div><div class="meal-item">Whole wheat roti<span class="qty">4 medium</span></div><div class="meal-item">Egg bhurji (4 eggs)<span class="qty">1 bowl</span></div><div class="meal-item">Moong dal soup<span class="qty">1 katori</span></div><span class="meal-kcal"><i data-feather="zap" style="width:10px;height:10px"></i>~580 kcal · 32g P · 68g C · 18g F</span></div>
+    <div class="meal-card full-width"><div class="meal-time"><i data-feather="moon" style="width:11px;height:11px"></i>10:30 PM · Before Bed</div><div class="meal-name">Sattu Drink</div><div class="meal-item">Sattu powder<span class="qty">50g</span></div><div class="meal-item">Milk<span class="qty">250ml</span></div><div class="meal-item">Jaggery<span class="qty">1 tsp</span></div><span class="meal-kcal"><i data-feather="zap" style="width:10px;height:10px"></i>~330 kcal · 20g P · 44g C · 7g F</span></div>
+  </div>
+  <!-- FRI -->
+  <div class="meal-plan" id="day-fri">
+    <div class="meal-card"><div class="meal-time"><i data-feather="sunrise" style="width:11px;height:11px"></i>7:00 AM · Breakfast</div><div class="meal-name">Oats Egg Porridge</div><div class="meal-item">Rolled oats<span class="qty">80g dry</span></div><div class="meal-item">Eggs whisked in<span class="qty">2 eggs</span></div><div class="meal-item">Banana<span class="qty">1 medium</span></div><div class="meal-item">Peanut butter<span class="qty">1 tbsp</span></div><span class="meal-kcal"><i data-feather="zap" style="width:10px;height:10px"></i>~620 kcal · 32g P · 78g C · 18g F</span></div>
+    <div class="meal-card"><div class="meal-time"><i data-feather="coffee" style="width:11px;height:11px"></i>10:30 AM · Snack</div><div class="meal-name">Makhana + Milk</div><div class="meal-item">Roasted makhana<span class="qty">30g</span></div><div class="meal-item">Full-fat milk<span class="qty">250ml</span></div><span class="meal-kcal"><i data-feather="zap" style="width:10px;height:10px"></i>~280 kcal · 12g P · 36g C · 8g F</span></div>
+    <div class="meal-card"><div class="meal-time"><i data-feather="sun" style="width:11px;height:11px"></i>1:30 PM · Lunch</div><div class="meal-name">Pulao + Egg Curry</div><div class="meal-item">Vegetable pulao<span class="qty">250g</span></div><div class="meal-item">Egg curry (4 eggs)<span class="qty">1 bowl</span></div><div class="meal-item">Raita<span class="qty">100g</span></div><span class="meal-kcal"><i data-feather="zap" style="width:10px;height:10px"></i>~680 kcal · 35g P · 88g C · 18g F</span></div>
+    <div class="meal-card"><div class="meal-time"><i data-feather="clock" style="width:11px;height:11px"></i>5:00 PM · Pre-Workout</div><div class="meal-name">Banana + Boiled Eggs</div><div class="meal-item">Banana<span class="qty">2 medium</span></div><div class="meal-item">Boiled eggs<span class="qty">2 whole</span></div><span class="meal-kcal"><i data-feather="zap" style="width:10px;height:10px"></i>~280 kcal · 14g P · 40g C · 8g F</span></div>
+    <div class="meal-card full-width"><div class="meal-time"><i data-feather="moon" style="width:11px;height:11px"></i>8:00 PM · Dinner</div><div class="meal-name">Roti + Paneer + Dal</div><div class="meal-item">Whole wheat roti<span class="qty">4 medium</span></div><div class="meal-item">Paneer sabzi<span class="qty">100g paneer</span></div><div class="meal-item">Dal<span class="qty">1 katori</span></div><span class="meal-kcal"><i data-feather="zap" style="width:10px;height:10px"></i>~620 kcal · 32g P · 72g C · 20g F</span></div>
+    <div class="meal-card full-width"><div class="meal-time"><i data-feather="moon" style="width:11px;height:11px"></i>10:30 PM · Before Bed</div><div class="meal-name">Milk + Peanuts</div><div class="meal-item">Full-fat milk<span class="qty">300ml</span></div><div class="meal-item">Roasted peanuts<span class="qty">30g</span></div><span class="meal-kcal"><i data-feather="zap" style="width:10px;height:10px"></i>~320 kcal · 16g P · 22g C · 16g F</span></div>
+  </div>
+  <!-- SAT -->
+  <div class="meal-plan" id="day-sat">
+    <div class="meal-card full-width"><div class="meal-time"><i data-feather="sunrise" style="width:11px;height:11px"></i>7:00 AM · Breakfast</div><div class="meal-name">Masala Omelette + Toast + Shake</div><div class="meal-item">Eggs<span class="qty">4 whole</span></div><div class="meal-item">Whole wheat toast<span class="qty">2 slices</span></div><div class="meal-item">Banana shake<span class="qty">300ml</span></div><span class="meal-kcal"><i data-feather="zap" style="width:10px;height:10px"></i>~650 kcal · 38g P · 62g C · 22g F</span></div>
+    <div class="meal-card"><div class="meal-time"><i data-feather="coffee" style="width:11px;height:11px"></i>10:30 AM · Snack</div><div class="meal-name">Greek-style Curd Bowl</div><div class="meal-item">Hung curd<span class="qty">200g</span></div><div class="meal-item">Honey + seeds<span class="qty">1 tbsp each</span></div><span class="meal-kcal"><i data-feather="zap" style="width:10px;height:10px"></i>~280 kcal · 16g P · 26g C · 10g F</span></div>
+    <div class="meal-card"><div class="meal-time"><i data-feather="sun" style="width:11px;height:11px"></i>1:30 PM · Lunch</div><div class="meal-name">Egg Biryani</div><div class="meal-item">Egg biryani<span class="qty">300g</span></div><div class="meal-item">Eggs<span class="qty">3 eggs</span></div><div class="meal-item">Raita<span class="qty">100g</span></div><span class="meal-kcal"><i data-feather="zap" style="width:10px;height:10px"></i>~680 kcal · 32g P · 95g C · 18g F</span></div>
+    <div class="meal-card"><div class="meal-time"><i data-feather="clock" style="width:11px;height:11px"></i>5:00 PM · Pre-Workout</div><div class="meal-name">PB + Banana</div><div class="meal-item">Banana<span class="qty">2 medium</span></div><div class="meal-item">Peanut butter<span class="qty">2 tbsp</span></div><span class="meal-kcal"><i data-feather="zap" style="width:10px;height:10px"></i>~330 kcal · 10g P · 48g C · 16g F</span></div>
+    <div class="meal-card full-width"><div class="meal-time"><i data-feather="moon" style="width:11px;height:11px"></i>8:00 PM · Dinner</div><div class="meal-name">Paneer Wrap + Dal Soup</div><div class="meal-item">Whole wheat roti<span class="qty">4 medium</span></div><div class="meal-item">Paneer tikka<span class="qty">120g</span></div><div class="meal-item">Dal soup<span class="qty">1 bowl</span></div><span class="meal-kcal"><i data-feather="zap" style="width:10px;height:10px"></i>~580 kcal · 34g P · 68g C · 18g F</span></div>
+    <div class="meal-card full-width"><div class="meal-time"><i data-feather="moon" style="width:11px;height:11px"></i>10:30 PM · Before Bed</div><div class="meal-name">Milk + Almonds</div><div class="meal-item">Full-fat milk<span class="qty">300ml</span></div><div class="meal-item">Soaked almonds<span class="qty">10 pieces</span></div><span class="meal-kcal"><i data-feather="zap" style="width:10px;height:10px"></i>~290 kcal · 12g P · 20g C · 16g F</span></div>
+  </div>
+  <!-- SUN -->
+  <div class="meal-plan" id="day-sun">
+    <div class="meal-card"><div class="meal-time"><i data-feather="sunrise" style="width:11px;height:11px"></i>8:00 AM · Breakfast</div><div class="meal-name">Idli + Sambar + Eggs</div><div class="meal-item">Idli<span class="qty">4–5 pieces</span></div><div class="meal-item">Sambar<span class="qty">1 katori</span></div><div class="meal-item">Boiled eggs<span class="qty">3 eggs</span></div><span class="meal-kcal"><i data-feather="zap" style="width:10px;height:10px"></i>~560 kcal · 32g P · 74g C · 12g F</span></div>
+    <div class="meal-card"><div class="meal-time"><i data-feather="coffee" style="width:11px;height:11px"></i>11:00 AM · Brunch</div><div class="meal-name">Sprouts Chaat + Eggs</div><div class="meal-item">Boiled mixed sprouts<span class="qty">100g</span></div><div class="meal-item">Boiled eggs<span class="qty">2 eggs</span></div><span class="meal-kcal"><i data-feather="zap" style="width:10px;height:10px"></i>~290 kcal · 22g P · 24g C · 10g F</span></div>
+    <div class="meal-card"><div class="meal-time"><i data-feather="sun" style="width:11px;height:11px"></i>2:00 PM · Lunch</div><div class="meal-name">Poha + Curd + Eggs</div><div class="meal-item">Poha cooked<span class="qty">150g dry</span></div><div class="meal-item">Curd<span class="qty">150g</span></div><div class="meal-item">Boiled eggs<span class="qty">3 eggs</span></div><span class="meal-kcal"><i data-feather="zap" style="width:10px;height:10px"></i>~620 kcal · 30g P · 82g C · 14g F</span></div>
+    <div class="meal-card"><div class="meal-time"><i data-feather="clock" style="width:11px;height:11px"></i>5:00 PM · Evening</div><div class="meal-name">Makhana + Chai</div><div class="meal-item">Roasted makhana<span class="qty">40g</span></div><div class="meal-item">Masala chai<span class="qty">1 cup</span></div><span class="meal-kcal"><i data-feather="zap" style="width:10px;height:10px"></i>~220 kcal · 7g P · 34g C · 6g F</span></div>
+    <div class="meal-card full-width"><div class="meal-time"><i data-feather="moon" style="width:11px;height:11px"></i>8:00 PM · Dinner</div><div class="meal-name">Dal Makhani + Roti</div><div class="meal-item">Whole wheat roti<span class="qty">4 medium</span></div><div class="meal-item">Dal makhani<span class="qty">1.5 katori</span></div><div class="meal-item">Green sabzi<span class="qty">1 katori</span></div><span class="meal-kcal"><i data-feather="zap" style="width:10px;height:10px"></i>~580 kcal · 26g P · 78g C · 16g F</span></div>
+    <div class="meal-card full-width"><div class="meal-time"><i data-feather="moon" style="width:11px;height:11px"></i>10:30 PM · Before Bed</div><div class="meal-name">Milk + Peanut Butter</div><div class="meal-item">Full-fat milk<span class="qty">300ml</span></div><div class="meal-item">Peanut butter<span class="qty">1.5 tbsp</span></div><span class="meal-kcal"><i data-feather="zap" style="width:10px;height:10px"></i>~310 kcal · 14g P · 24g C · 14g F</span></div>
+  </div>
+
+  <!-- 03 BUDGET FOODS -->
+  <div class="section-header"><span class="section-num">03</span><span class="section-title">Budget Indian Foods</span><div class="section-divider"></div></div>
+  <div class="food-grid">
+    <div class="food-item"><div class="food-icon-wrap"><i data-feather="circle" style="width:18px;height:18px;stroke:#b5f23d"></i></div><div class="food-name">Whole Eggs</div><div class="food-macro">6g protein per egg · ~70 kcal</div><div class="food-price">₹6–8 per egg</div></div>
+    <div class="food-item"><div class="food-icon-wrap"><i data-feather="droplet" style="width:18px;height:18px;stroke:#b5f23d"></i></div><div class="food-name">Full-Fat Milk</div><div class="food-macro">8g protein per 250ml · ~160 kcal</div><div class="food-price">₹25–30 per 500ml</div></div>
+    <div class="food-item"><div class="food-icon-wrap"><i data-feather="box" style="width:18px;height:18px;stroke:#b5f23d"></i></div><div class="food-name">Paneer</div><div class="food-macro">18g protein per 100g · ~265 kcal</div><div class="food-price">₹60–80 per 100g</div></div>
+    <div class="food-item"><div class="food-icon-wrap"><i data-feather="layers" style="width:18px;height:18px;stroke:#b5f23d"></i></div><div class="food-name">Peanut Butter</div><div class="food-macro">8g protein per 2 tbsp · ~190 kcal</div><div class="food-price">₹150–200 / 500g jar</div></div>
+    <div class="food-item"><div class="food-icon-wrap"><i data-feather="align-justify" style="width:18px;height:18px;stroke:#b5f23d"></i></div><div class="food-name">Rolled Oats</div><div class="food-macro">5g protein per 40g · ~150 kcal</div><div class="food-price">₹70–100 per 500g</div></div>
+    <div class="food-item"><div class="food-icon-wrap"><i data-feather="grid" style="width:18px;height:18px;stroke:#b5f23d"></i></div><div class="food-name">White Rice</div><div class="food-macro">4g protein per 100g · ~130 kcal</div><div class="food-price">₹40–60 per kg</div></div>
+    <div class="food-item"><div class="food-icon-wrap"><i data-feather="package" style="width:18px;height:18px;stroke:#b5f23d"></i></div><div class="food-name">Toor / Moong Dal</div><div class="food-macro">7–9g protein per 100g · ~116 kcal</div><div class="food-price">₹80–120 per kg</div></div>
+    <div class="food-item"><div class="food-icon-wrap"><i data-feather="circle" style="width:18px;height:18px;stroke:#b5f23d"></i></div><div class="food-name">Roasted Peanuts</div><div class="food-macro">7g protein per 30g · ~165 kcal</div><div class="food-price">₹30–50 per 250g</div></div>
+    <div class="food-item"><div class="food-icon-wrap"><i data-feather="feather" style="width:18px;height:18px;stroke:#b5f23d"></i></div><div class="food-name">Sattu Powder</div><div class="food-macro">20g protein per 50g · ~175 kcal</div><div class="food-price">₹40–60 per 500g</div></div>
+    <div class="food-item"><div class="food-icon-wrap"><i data-feather="archive" style="width:18px;height:18px;stroke:#b5f23d"></i></div><div class="food-name">Curd / Dahi</div><div class="food-macro">10g protein per 200g · ~120 kcal</div><div class="food-price">₹20–30 per 200g</div></div>
+    <div class="food-item"><div class="food-icon-wrap"><i data-feather="disc" style="width:18px;height:18px;stroke:#b5f23d"></i></div><div class="food-name">Chickpeas (Chana)</div><div class="food-macro">15g protein per 100g dry</div><div class="food-price">₹60–80 per kg</div></div>
+    <div class="food-item"><div class="food-icon-wrap"><i data-feather="triangle" style="width:18px;height:18px;stroke:#b5f23d"></i></div><div class="food-name">Besan</div><div class="food-macro">22g protein per 100g · ~387 kcal</div><div class="food-price">₹60–80 per kg</div></div>
+  </div>
+
+  <!-- 04 WEEKLY ROTATION -->
+  <div class="section-header"><span class="section-num">04</span><span class="section-title">Weekly Rotation</span><div class="section-divider"></div></div>
+  <div class="card"><table class="week-table"><thead><tr><th>Day</th><th>Carb Source</th><th>Main Protein</th><th>Dal / Legume</th></tr></thead><tbody>
+    <tr><td>Mon</td><td>Rice + Roti</td><td>Whole eggs (8–10)</td><td>Toor dal</td></tr>
+    <tr><td>Tue</td><td>Rice + Oats</td><td>Boiled eggs + Rajma</td><td>Rajma</td></tr>
+    <tr><td>Wed</td><td>Roti + Dalia</td><td>Eggs + Paneer</td><td>Moong dal</td></tr>
+    <tr><td>Thu</td><td>Rice + Roti</td><td>Eggs + Paneer</td><td>Masoor dal</td></tr>
+    <tr><td>Fri</td><td>Rice + Roti</td><td>Eggs + Curd</td><td>Chole</td></tr>
+    <tr><td>Sat</td><td>Rice + Roti</td><td>Eggs + Paneer</td><td>Mixed dal</td></tr>
+    <tr><td>Sun</td><td>Idli/Poha + Roti</td><td>Eggs + Sprouts</td><td>Dal makhani</td></tr>
+  </tbody></table></div>
+
+  <!-- 05 WORKOUT NUTRITION -->
+  <div class="section-header"><span class="section-num">05</span><span class="section-title">Workout Nutrition</span><div class="section-divider"></div></div>
+  <div class="timing-grid">
+    <div class="timing-card">
+      <div class="timing-label"><span class="timing-badge pre-badge">Pre-Workout</span> 45–60 Min Before</div>
+      <div class="timing-item"><i data-feather="arrow-right" style="width:12px;height:12px;stroke:var(--muted)" class="ti-icon"></i>2 bananas + 2 boiled eggs</div>
+      <div class="timing-item"><i data-feather="arrow-right" style="width:12px;height:12px;stroke:var(--muted)" class="ti-icon"></i>OR: oats (60g) + milk + honey</div>
+      <div class="timing-item"><i data-feather="arrow-right" style="width:12px;height:12px;stroke:var(--muted)" class="ti-icon"></i>OR: 2 bread slices + peanut butter</div>
+      <div class="timing-item" style="color:var(--accent2)"><i data-feather="target" style="width:12px;height:12px;stroke:var(--accent2)" class="ti-icon"></i>Target: 30–50g carbs + 10–15g protein</div>
+      <div class="timing-item"><i data-feather="droplet" style="width:12px;height:12px;stroke:var(--muted)" class="ti-icon"></i>Drink 500ml water 30 min before</div>
+    </div>
+    <div class="timing-card">
+      <div class="timing-label"><span class="timing-badge post-badge">Post-Workout</span> Within 30–60 Min</div>
+      <div class="timing-item"><i data-feather="arrow-right" style="width:12px;height:12px;stroke:var(--muted)" class="ti-icon"></i>4 egg whites + 2 whole eggs</div>
+      <div class="timing-item"><i data-feather="arrow-right" style="width:12px;height:12px;stroke:var(--muted)" class="ti-icon"></i>OR: curd 200g + banana + honey</div>
+      <div class="timing-item"><i data-feather="arrow-right" style="width:12px;height:12px;stroke:var(--muted)" class="ti-icon"></i>OR: milk (300ml) + sattu (50g)</div>
+      <div class="timing-item" style="color:var(--accent3)"><i data-feather="target" style="width:12px;height:12px;stroke:var(--accent3)" class="ti-icon"></i>Target: 25–40g protein + 40–60g carbs</div>
+      <div class="timing-item"><i data-feather="droplet" style="width:12px;height:12px;stroke:var(--muted)" class="ti-icon"></i>Rehydrate with 500–750ml water</div>
+    </div>
+  </div>
+
+  <!-- 06 SUPPLEMENTS -->
+  <div class="section-header"><span class="section-num">06</span><span class="section-title">Supplement Guide</span><div class="section-divider"></div></div>
+  <div class="supp-grid">
+    <div class="supp-card"><span class="supp-priority must">Must Have</span><div class="supp-icon" style="background:rgba(181,242,61,.08);border:1px solid rgba(181,242,61,.15)"><i data-feather="zap" style="width:16px;height:16px;stroke:#b5f23d"></i></div><div class="supp-name">Creatine Monohydrate</div><div class="supp-dose">3–5g daily (any time)</div><div class="supp-desc">Most researched supplement for strength &amp; muscle gains. ₹500–800/month.</div></div>
+    <div class="supp-card"><span class="supp-priority must">Must Have</span><div class="supp-icon" style="background:rgba(242,168,61,.08);border:1px solid rgba(242,168,61,.15)"><i data-feather="sun" style="width:16px;height:16px;stroke:#f2a83d"></i></div><div class="supp-name">Vitamin D3</div><div class="supp-dose">1,000–2,000 IU daily</div><div class="supp-desc">Most Indians are deficient. Critical for testosterone &amp; muscle function. ₹150–300/month.</div></div>
+    <div class="supp-card"><span class="supp-priority optional">Optional</span><div class="supp-icon" style="background:rgba(61,184,242,.08);border:1px solid rgba(61,184,242,.15)"><i data-feather="droplet" style="width:16px;height:16px;stroke:#3db8f2"></i></div><div class="supp-name">Whey Protein</div><div class="supp-dose">1 scoop post-workout</div><div class="supp-desc">Convenient if you struggle with protein targets. Try MuscleBlaze or Nakpro.</div></div>
+    <div class="supp-card"><span class="supp-priority optional">Optional</span><div class="supp-icon" style="background:rgba(176,126,242,.08);border:1px solid rgba(176,126,242,.15)"><i data-feather="heart" style="width:16px;height:16px;stroke:#b07ef2"></i></div><div class="supp-name">Omega-3</div><div class="supp-dose">1–2g EPA+DHA daily</div><div class="supp-desc">Reduces inflammation, supports joints &amp; recovery. ₹300–600/month.</div></div>
+    <div class="supp-card"><span class="supp-priority optional">Optional</span><div class="supp-icon" style="background:rgba(255,255,255,.04);border:1px solid var(--border)"><i data-feather="shield" style="width:16px;height:16px;stroke:var(--muted)"></i></div><div class="supp-name">Multivitamin</div><div class="supp-dose">1 tablet daily with food</div><div class="supp-desc">Covers micronutrient gaps. Choose Revital H or Centrum. ₹200–400/month.</div></div>
+    <div class="supp-card"><span class="supp-priority optional">Skip</span><div class="supp-icon" style="background:rgba(242,92,61,.06);border:1px solid rgba(242,92,61,.15)"><i data-feather="x-circle" style="width:16px;height:16px;stroke:#f25c3d"></i></div><div class="supp-name">Pre-Workouts / Fat Burners</div><div class="supp-dose">Not for beginners</div><div class="supp-desc">Waste of money. Banana + black coffee is free and effective.</div></div>
+  </div>
+
+  <!-- 07 MISTAKES -->
+  <div class="section-header"><span class="section-num">07</span><span class="section-title">Mistakes to Avoid</span><div class="section-divider"></div></div>
+  <div class="mistake-list">
+    <div class="mistake-item"><div class="mistake-icon-box"><i data-feather="alert-triangle"></i></div><div><div class="mistake-title">Not eating enough protein</div><div class="mistake-desc">You must hit 120g+ protein daily. Track food for the first 2–4 weeks.</div></div></div>
+    <div class="mistake-item"><div class="mistake-icon-box"><i data-feather="clock"></i></div><div><div class="mistake-title">Skipping the post-workout meal</div><div class="mistake-desc">The 30–60 min window is when protein and carbs are most effective. Missing it leaves gains on the table.</div></div></div>
+    <div class="mistake-item"><div class="mistake-icon-box"><i data-feather="sliders"></i></div><div><div class="mistake-title">Eating too little or dirty bulking</div><div class="mistake-desc">Too little = no gain. Too much = fat gain. Keep your surplus controlled at +200–300 kcal.</div></div></div>
+    <div class="mistake-item"><div class="mistake-icon-box"><i data-feather="refresh-cw"></i></div><div><div class="mistake-title">Changing plans every week</div><div class="mistake-desc">Stick to a plan for at least 4–6 weeks before evaluating results.</div></div></div>
+    <div class="mistake-item"><div class="mistake-icon-box"><i data-feather="moon"></i></div><div><div class="mistake-title">Not sleeping enough</div><div class="mistake-desc">Muscle is built during sleep. Aim 7–9 hours. Poor sleep raises cortisol and kills gains.</div></div></div>
+    <div class="mistake-item"><div class="mistake-icon-box"><i data-feather="droplet"></i></div><div><div class="mistake-title">Drinking too little water</div><div class="mistake-desc">Minimum 3–4 litres daily. Use the water tracker to stay accountable.</div></div></div>
+  </div>
+
+  <!-- 08 TIMELINE -->
+  <div class="section-header"><span class="section-num">08</span><span class="section-title">Expected Timeline</span><div class="section-divider"></div></div>
+  <div class="timeline">
+    <div class="timeline-item"><div class="timeline-period">Weeks 1–4</div><div class="timeline-title">Neural Adaptation &amp; Foundation</div><div class="timeline-desc">Strength increases rapidly before visible muscle. Focus on consistency and form.</div><span class="timeline-gain"><i data-feather="trending-up" style="width:10px;height:10px"></i>+0.5–1 kg (glycogen + water)</span></div>
+    <div class="timeline-item"><div class="timeline-period">Months 2–3</div><div class="timeline-title">Visible Muscle Development</div><div class="timeline-desc">Fuller muscles in chest, shoulders, arms. Strength gains continue rapidly.</div><span class="timeline-gain"><i data-feather="trending-up" style="width:10px;height:10px"></i>+1–1.5 kg lean muscle</span></div>
+    <div class="timeline-item"><div class="timeline-period">Months 4–6</div><div class="timeline-title">Significant Body Transformation</div><div class="timeline-desc">Noticeable physique change. 3–4 kg total added. Increase food if weight stalls.</div><span class="timeline-gain"><i data-feather="trending-up" style="width:10px;height:10px"></i>+2–3 kg lean muscle (cumulative)</span></div>
+    <div class="timeline-item"><div class="timeline-period">Months 7–12</div><div class="timeline-title">Solid Foundation Built</div><div class="timeline-desc">Out of beginner phase. Consider a mini-cut if body fat has crept up.</div><span class="timeline-gain"><i data-feather="trending-up" style="width:10px;height:10px"></i>+4–6 kg lean muscle (full year)</span></div>
+    <div class="timeline-item"><div class="timeline-period">Year 1–2</div><div class="timeline-title">Intermediate Physique</div><div class="timeline-desc">57 kg → 63–67 kg with dramatically improved body composition.</div><span class="timeline-gain"><i data-feather="trending-up" style="width:10px;height:10px"></i>+6–10 kg lean muscle total</span></div>
+  </div>
+  <div class="card" style="margin-top:36px;border-color:rgba(181,242,61,.2);background:rgba(181,242,61,.04);">
+    <div class="card-title" style="color:var(--accent)">Key Principle</div>
+    <p style="font-size:14px;">Muscle is built with <strong style="color:var(--text)">protein + surplus calories + progressive overload + sleep</strong>. Show up to the gym 4× per week, sleep 8 hours, and be patient. Consistency over 6 months beats perfection for 2 weeks.</p>
+  </div>
+</div>
+<footer>Personalised Lean Bulk Plan · Eggitarian · Indian Budget Diet · 20y · 57kg · 5′10″<br><span style="color:rgba(255,255,255,.2);margin-top:4px;display:block;">Not a substitute for professional medical advice.</span></footer>
+</div><!-- /page-plan -->
+
+<!-- ══════════ PAGE: TRACKER ══════════ -->
+<div class="page" id="page-tracker">
+<div class="tracker-header">
+  <div style="display:flex;align-items:flex-start;gap:16px;flex-wrap:wrap;justify-content:space-between;">
+    <div>
+      <div class="header-tag" style="margin-bottom:10px;"><i data-feather="bar-chart-2" style="width:11px;height:11px"></i> Daily Tracker</div>
+      <h2>FOOD &amp; <span>WATER</span><br>TRACKER</h2>
+      <p class="tracker-subtitle">Log meals, track hydration, and visualise your macros and weekly calories.</p>
+    </div>
+    <div style="text-align:right;padding-top:8px;">
+      <div style="font-family:'DM Mono',monospace;font-size:11px;color:var(--muted);margin-bottom:4px;">Daily Targets</div>
+      <div style="font-family:'Bebas Neue',sans-serif;font-size:28px;color:var(--accent);line-height:1;">2,450 kcal</div>
+      <div style="font-family:'DM Mono',monospace;font-size:11px;color:var(--text-soft);margin-top:4px;">120g P · 310g C · 81g F · 8 glasses water</div>
+    </div>
+  </div>
+  <!-- DOWNLOAD BUTTONS -->
+  <div class="dl-bar">
+    <button class="dl-btn dl-pdf" onclick="downloadPDF(this)">
+      <i data-feather="file-text"></i> Download PDF
+    </button>
+    <button class="dl-btn dl-img" onclick="downloadImage(this)">
+      <i data-feather="image"></i> Download Image
+    </button>
+  </div>
+</div>
+
+<div class="container" style="padding-top:28px;" id="tracker-content">
+
+  <!-- DATE BAR -->
+  <div class="date-bar">
+    <button class="date-nav-btn" onclick="changeDate(-1)"><i data-feather="chevron-left" style="width:16px;height:16px"></i></button>
+    <div class="date-label" id="date-label"><i data-feather="calendar" style="width:13px;height:13px;stroke:var(--muted)"></i><span id="date-text">Loading…</span></div>
+    <button class="today-btn" onclick="goToday()">Today</button>
+    <button class="date-nav-btn" onclick="changeDate(1)"><i data-feather="chevron-right" style="width:16px;height:16px"></i></button>
+  </div>
+
+  <!-- PROGRESS RINGS -->
+  <div class="targets-strip">
+    <div class="target-card">
+      <div class="target-label"><i data-feather="zap"></i>Calories</div>
+      <div class="ring-wrap">
+        <svg class="ring" width="70" height="70" viewBox="0 0 70 70">
+          <circle class="ring-bg" cx="35" cy="35" r="28" stroke-width="6"/>
+          <circle class="ring-fill" id="ring-kcal" cx="35" cy="35" r="28" stroke="#b5f23d" stroke-width="6" stroke-dasharray="175.93" stroke-dashoffset="175.93"/>
+        </svg>
+        <div class="ring-label" style="color:var(--accent)" id="v-kcal">0</div>
+      </div>
+      <div class="target-max">of 2450 kcal</div>
+      <div class="target-pct" id="pct-kcal" style="background:rgba(181,242,61,.1);color:var(--accent);">0%</div>
+    </div>
+    <div class="target-card">
+      <div class="target-label"><i data-feather="layers"></i>Protein</div>
+      <div class="ring-wrap">
+        <svg class="ring" width="70" height="70" viewBox="0 0 70 70">
+          <circle class="ring-bg" cx="35" cy="35" r="28" stroke-width="6"/>
+          <circle class="ring-fill" id="ring-pro" cx="35" cy="35" r="28" stroke="#f2a83d" stroke-width="6" stroke-dasharray="175.93" stroke-dashoffset="175.93"/>
+        </svg>
+        <div class="ring-label" style="color:#f2a83d" id="v-pro">0</div>
+      </div>
+      <div class="target-max">of 120g protein</div>
+      <div class="target-pct" id="pct-pro" style="background:rgba(242,168,61,.1);color:var(--accent2);">0%</div>
+    </div>
+    <div class="target-card">
+      <div class="target-label"><i data-feather="cpu"></i>Carbs</div>
+      <div class="ring-wrap">
+        <svg class="ring" width="70" height="70" viewBox="0 0 70 70">
+          <circle class="ring-bg" cx="35" cy="35" r="28" stroke-width="6"/>
+          <circle class="ring-fill" id="ring-carb" cx="35" cy="35" r="28" stroke="#3db8f2" stroke-width="6" stroke-dasharray="175.93" stroke-dashoffset="175.93"/>
+        </svg>
+        <div class="ring-label" style="color:#3db8f2" id="v-carb">0</div>
+      </div>
+      <div class="target-max">of 310g carbs</div>
+      <div class="target-pct" id="pct-carb" style="background:rgba(61,184,242,.1);color:var(--accent3);">0%</div>
+    </div>
+    <div class="target-card">
+      <div class="target-label"><i data-feather="droplet"></i>Fats</div>
+      <div class="ring-wrap">
+        <svg class="ring" width="70" height="70" viewBox="0 0 70 70">
+          <circle class="ring-bg" cx="35" cy="35" r="28" stroke-width="6"/>
+          <circle class="ring-fill" id="ring-fat" cx="35" cy="35" r="28" stroke="#b07ef2" stroke-width="6" stroke-dasharray="175.93" stroke-dashoffset="175.93"/>
+        </svg>
+        <div class="ring-label" style="color:#b07ef2" id="v-fat">0</div>
+      </div>
+      <div class="target-max">of 81g fats</div>
+      <div class="target-pct" id="pct-fat" style="background:rgba(176,126,242,.1);color:var(--accent4);">0%</div>
+    </div>
+  </div>
+
+  <!-- WATER -->
+  <div class="water-section">
+    <div class="water-header">
+      <div class="water-title"><i data-feather="droplet"></i> Water Intake</div>
+      <div class="water-count"><span id="water-count">0</span>/8 glasses &nbsp;·&nbsp; <span id="water-litres">0.00</span>L</div>
+    </div>
+    <div class="water-glasses" id="water-glasses-row"></div>
+    <div style="display:flex;align-items:center;gap:10px;margin-top:12px;">
+      <div style="flex:1;height:6px;background:var(--border);border-radius:3px;overflow:hidden;">
+        <div id="water-bar" style="height:100%;background:linear-gradient(90deg,#3db8f2,#7dd3fc);border-radius:3px;width:0%;transition:width .4s;"></div>
+      </div>
+      <div style="font-family:'DM Mono',monospace;font-size:12px;color:var(--accent3);" id="water-pct">0%</div>
+    </div>
+  </div>
+
+  <!-- LOG + ADD PANEL -->
+  <div class="log-grid">
+    <div>
+      <!-- FOOD LOG -->
+      <div class="food-log-panel">
+        <div class="food-log-header">
+          <div class="food-log-title"><i data-feather="list"></i> Today's Food Log</div>
+          <button class="clear-btn" onclick="clearLog()"><i data-feather="trash-2"></i> Clear</button>
+        </div>
+        <div id="food-log-list">
+          <div class="log-empty"><i data-feather="inbox"></i><span>No food logged yet.</span><span style="font-size:12px;">Use the panel to add your first entry.</span></div>
+        </div>
+      </div>
+
+      <!-- CHARTS -->
+      <div class="charts-grid">
+        <!-- PIE -->
+        <div class="chart-card">
+          <div class="chart-title"><i data-feather="pie-chart"></i> Macro Breakdown</div>
+          <div class="chart-sub">Today's calories from protein / carbs / fats</div>
+          <div class="doughnut-wrap">
+            <canvas id="macroChart" width="180" height="180" style="max-width:180px;max-height:180px;"></canvas>
+            <div class="doughnut-center">
+              <div class="doughnut-kcal-num" id="pie-kcal">0</div>
+              <div class="doughnut-sub">kcal</div>
+            </div>
+          </div>
+          <div class="macro-legend">
+            <div class="legend-item"><div class="legend-dot" style="background:#f2a83d"></div>Protein</div>
+            <div class="legend-item"><div class="legend-dot" style="background:#3db8f2"></div>Carbs</div>
+            <div class="legend-item"><div class="legend-dot" style="background:#b07ef2"></div>Fats</div>
+            <div class="legend-item"><div class="legend-dot" style="background:#2a2f2a"></div>Remaining</div>
+          </div>
+        </div>
+        <!-- BAR -->
+        <div class="chart-card">
+          <div class="chart-title"><i data-feather="bar-chart-2"></i> Weekly Calories</div>
+          <div class="chart-sub">Last 7 days vs. 2,450 kcal target</div>
+          <div style="height:200px;"><canvas id="weekChart"></canvas></div>
+          <div class="weekly-stats">
+            <div class="weekly-stat"><div class="ws-value" id="ws-avg" style="color:var(--accent)">–</div><div class="ws-label">Avg kcal</div></div>
+            <div class="weekly-stat"><div class="ws-value" id="ws-days" style="color:var(--accent3)">0/7</div><div class="ws-label">Days Hit</div></div>
+            <div class="weekly-stat"><div class="ws-value" id="ws-streak" style="color:var(--accent2)">0</div><div class="ws-label">Streak</div></div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ADD FOOD PANEL -->
+    <div class="add-food-panel">
+      <div class="panel-title"><i data-feather="plus-circle"></i> Log Food</div>
+      <div class="form-row">
+        <label class="form-label"><i data-feather="edit-2"></i> Food Name</label>
+        <input class="form-input" id="f-name" type="text" placeholder="e.g. Boiled Eggs (3)">
+      </div>
+      <div class="form-row">
+        <label class="form-label"><i data-feather="zap"></i> Calories (kcal)</label>
+        <input class="form-input" id="f-kcal" type="number" min="0" placeholder="e.g. 210">
+      </div>
+      <div class="form-row">
+        <label class="form-label"><i data-feather="layers"></i> Macros (grams)</label>
+        <div class="macro-inputs">
+          <input class="form-input" id="f-pro" type="number" min="0" placeholder="Protein">
+          <input class="form-input" id="f-carb" type="number" min="0" placeholder="Carbs">
+          <input class="form-input" id="f-fat" type="number" min="0" placeholder="Fats">
+        </div>
+      </div>
+      <button class="add-btn" onclick="addFood()"><i data-feather="plus"></i> Log This Food</button>
+
+      <div class="section-mini"><i data-feather="zap"></i> Quick Add from Plan</div>
+      <div class="quick-chips">
+        <div class="quick-chip" onclick="qa('Boiled Egg',70,6,0,5)"><i data-feather="circle"></i>Egg x1</div>
+        <div class="quick-chip" onclick="qa('Oats 80g',290,10,50,5)"><i data-feather="align-justify"></i>Oats 80g</div>
+        <div class="quick-chip" onclick="qa('Banana',90,1,23,0)"><i data-feather="feather"></i>Banana</div>
+        <div class="quick-chip" onclick="qa('Milk 250ml',160,8,12,9)"><i data-feather="droplet"></i>Milk 250ml</div>
+        <div class="quick-chip" onclick="qa('Peanut Butter 2tbsp',190,8,6,16)"><i data-feather="layers"></i>PB 2tbsp</div>
+        <div class="quick-chip" onclick="qa('Rice 200g cooked',260,5,57,0)"><i data-feather="grid"></i>Rice 200g</div>
+        <div class="quick-chip" onclick="qa('Dal 150g cooked',175,11,28,1)"><i data-feather="package"></i>Dal 150g</div>
+        <div class="quick-chip" onclick="qa('Paneer 100g',265,18,4,20)"><i data-feather="box"></i>Paneer 100g</div>
+        <div class="quick-chip" onclick="qa('Curd 100g',60,4,5,3)"><i data-feather="archive"></i>Curd 100g</div>
+        <div class="quick-chip" onclick="qa('Roti 1 medium',80,3,17,1)"><i data-feather="minus"></i>1 Roti</div>
+        <div class="quick-chip" onclick="qa('Sattu 50g',175,11,30,2)"><i data-feather="triangle"></i>Sattu 50g</div>
+        <div class="quick-chip" onclick="qa('Peanuts 30g',165,7,5,14)"><i data-feather="circle"></i>Peanuts 30g</div>
+        <div class="quick-chip" onclick="qa('Bread 2 slices',140,5,26,2)"><i data-feather="square"></i>Bread 2sl</div>
+        <div class="quick-chip" onclick="qa('Chickpeas 100g',165,9,27,3)"><i data-feather="disc"></i>Chana 100g</div>
+        <div class="quick-chip" onclick="qa('Ghee 1tsp',45,0,0,5)"><i data-feather="sun"></i>Ghee 1tsp</div>
+        <div class="quick-chip" onclick="qa('Whey Protein 1 scoop',120,25,3,2)"><i data-feather="activity"></i>Whey</div>
+      </div>
+
+      <div style="margin-top:16px;padding-top:14px;border-top:1px solid var(--border);">
+        <div class="section-mini" style="margin-top:0;"><i data-feather="droplet"></i> Log Water</div>
+        <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;">
+          <button onclick="addWater(1)" style="padding:10px 6px;background:rgba(61,184,242,.1);border:1px solid rgba(61,184,242,.25);color:var(--accent3);border-radius:8px;cursor:pointer;font-size:12px;font-weight:700;line-height:1.4;display:flex;flex-direction:column;align-items:center;gap:2px;">
+            <i data-feather="plus" style="width:13px;height:13px;stroke:var(--accent3)"></i>+1<span style="font-size:10px;font-weight:400;opacity:.7;">250ml</span>
+          </button>
+          <button onclick="addWater(2)" style="padding:10px 6px;background:rgba(61,184,242,.07);border:1px solid rgba(61,184,242,.2);color:var(--accent3);border-radius:8px;cursor:pointer;font-size:12px;font-weight:700;line-height:1.4;display:flex;flex-direction:column;align-items:center;gap:2px;">
+            <i data-feather="plus" style="width:13px;height:13px;stroke:var(--accent3)"></i>+2<span style="font-size:10px;font-weight:400;opacity:.7;">500ml</span>
+          </button>
+          <button onclick="resetWater()" style="padding:10px 6px;background:rgba(255,255,255,.04);border:1px solid var(--border);color:var(--muted);border-radius:8px;cursor:pointer;font-size:11px;display:flex;flex-direction:column;align-items:center;gap:2px;">
+            <i data-feather="rotate-ccw" style="width:13px;height:13px;stroke:var(--muted)"></i>Reset
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+</div>
+</div><!-- /page-tracker -->
+
+<script>
+// ── Constants ──
+const TARGETS = {kcal:2450, pro:120, carb:310, fat:81, water:8};
+const CIRC = 2*Math.PI*28;
+let currentDate = todayStr();
+let macroChart = null, weekChart = null;
+
+// ── Storage (localStorage — works in any browser) ──
+function load(k){try{const v=localStorage.getItem(k);return v?JSON.parse(v):null;}catch(e){return null;}}
+function save(k,v){try{localStorage.setItem(k,JSON.stringify(v));}catch(e){}}
+function sKey(d){return 'bulktracker:'+d;}
+function getDay(d){return load(sKey(d))||{foods:[],water:0};}
+function setDay(d,v){save(sKey(d),v);}
+
+// ── Dates ──
+function todayStr(){return new Date().toISOString().slice(0,10);}
+function fmtDate(s){
+  const d=new Date(s+'T12:00:00');
+  const lbl=d.toLocaleDateString('en-IN',{weekday:'long',year:'numeric',month:'long',day:'numeric'});
+  const t=todayStr(),y=new Date(Date.now()-864e5).toISOString().slice(0,10);
+  if(s===t) return 'Today — '+lbl;
+  if(s===y) return 'Yesterday — '+lbl;
+  return lbl;
+}
+function changeDate(d){
+  const dt=new Date(currentDate+'T12:00:00');
+  dt.setDate(dt.getDate()+d);
+  const ns=dt.toISOString().slice(0,10);
+  if(ns>todayStr()) return;
+  currentDate=ns;
+  renderTracker();
+}
+function goToday(){currentDate=todayStr();renderTracker();}
+
+// ── Totals ──
+function tot(foods){return foods.reduce((a,f)=>({kcal:a.kcal+(f.kcal||0),pro:a.pro+(f.pro||0),carb:a.carb+(f.carb||0),fat:a.fat+(f.fat||0)}),{kcal:0,pro:0,carb:0,fat:0});}
+
+// ── Render ──
+function renderTracker(){
+  document.getElementById('date-text').textContent=fmtDate(currentDate);
+  const data=getDay(currentDate);
+  const t=tot(data.foods);
+  updateRings(t);
+  renderLog(data.foods);
+  updateWater(data.water);
+  renderMacro(t);
+  renderWeek();
+  feather.replace();
+}
+
+// ── Rings ──
+function setRing(id,val,max){
+  const pct=Math.min(val/max,1);
+  document.getElementById('ring-'+id).style.strokeDashoffset=CIRC*(1-pct);
+  document.getElementById('v-'+id).textContent=Math.round(val);
+  document.getElementById('pct-'+id).textContent=Math.round(pct*100)+'%';
+}
+function updateRings(t){
+  setRing('kcal',t.kcal,TARGETS.kcal);
+  setRing('pro',t.pro,TARGETS.pro);
+  setRing('carb',t.carb,TARGETS.carb);
+  setRing('fat',t.fat,TARGETS.fat);
+  document.getElementById('pie-kcal').textContent=Math.round(t.kcal);
+}
+
+// ── Food Log ──
+function renderLog(foods){
+  const el=document.getElementById('food-log-list');
+  if(!foods.length){
+    el.innerHTML='<div class="log-empty"><svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="#2a2f2a" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="7" width="20" height="14" rx="2"/><path d="M16 7V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v2"/></svg><span>No food logged yet.</span><span style="font-size:12px;">Use the panel to add your first entry.</span></div>';
+    return;
+  }
+  el.innerHTML=foods.map((f,i)=>`
+    <div class="log-entry">
+      <div>
+        <div class="log-food-name">${esc(f.name)}</div>
+        <div class="log-macros">
+          <span class="lk">${f.kcal} kcal</span>
+          <span class="lp">${f.pro}g P</span>
+          <span class="lc">${f.carb}g C</span>
+          <span class="lf">${f.fat}g F</span>
+        </div>
+      </div>
+      <button class="delete-btn" onclick="delFood(${i})" title="Remove">
+        <svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+      </button>
+    </div>`).join('');
+}
+function esc(s){return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');}
+
+// ── Water ──
+function updateWater(w){
+  document.getElementById('water-count').textContent=w;
+  document.getElementById('water-litres').textContent=(w*0.25).toFixed(2);
+  const pct=Math.round((w/TARGETS.water)*100);
+  document.getElementById('water-bar').style.width=Math.min(pct,100)+'%';
+  document.getElementById('water-pct').textContent=pct+'%';
+  const row=document.getElementById('water-glasses-row');
+  row.innerHTML='';
+  for(let i=1;i<=TARGETS.water;i++){
+    const filled=i<=w;
+    const btn=document.createElement('button');
+    btn.className='glass-btn'+(filled?' filled':'');
+    btn.title=`Glass ${i} (${i*250}ml)`;
+    btn.onclick=()=>toggleGlass(i);
+    const fillDiv=document.createElement('div');
+    fillDiv.className='glass-fill';
+    fillDiv.style.height=filled?'65%':'0%';
+    const iconDiv=document.createElement('div');
+    iconDiv.className='glass-icon';
+    // SVG droplet icon
+    iconDiv.innerHTML=`<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="${filled?'#3db8f2':'#6b7368'}" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2.69l5.66 5.66a8 8 0 1 1-11.31 0z"/></svg><span>${i*250}ml</span>`;
+    btn.appendChild(fillDiv);
+    btn.appendChild(iconDiv);
+    row.appendChild(btn);
+  }
+}
+function toggleGlass(n){const data=getDay(currentDate);data.water=(data.water===n)?n-1:n;setDay(currentDate,data);updateWater(data.water);}
+function addWater(n){const data=getDay(currentDate);data.water=Math.min((data.water||0)+n,TARGETS.water);setDay(currentDate,data);updateWater(data.water);}
+function resetWater(){const data=getDay(currentDate);data.water=0;setDay(currentDate,data);updateWater(0);}
+
+// ── Macro Pie ──
+function renderMacro(t){
+  const ctx=document.getElementById('macroChart').getContext('2d');
+  const pK=t.pro*4,cK=t.carb*4,fK=t.fat*9;
+  const rem=Math.max(0,TARGETS.kcal-(pK+cK+fK));
+  if(macroChart) macroChart.destroy();
+  macroChart=new Chart(ctx,{
+    type:'doughnut',
+    data:{
+      labels:['Protein','Carbs','Fats','Remaining'],
+      datasets:[{data:[pK||0,cK||0,fK||0,rem],backgroundColor:['#f2a83d','#3db8f2','#b07ef2','#2a2f2a'],borderColor:'#1a1d1a',borderWidth:3,hoverOffset:5}]
+    },
+    options:{
+      cutout:'70%',responsive:true,maintainAspectRatio:true,
+      plugins:{
+        legend:{display:false},
+        tooltip:{callbacks:{label:(c)=>{const g={Protein:t.pro+'g P',Carbs:t.carb+'g C',Fats:t.fat+'g F',Remaining:''}[c.label]||'';return ` ${c.label}: ${Math.round(c.parsed)} kcal ${g}`;}},
+          backgroundColor:'#1a1d1a',borderColor:'#2a2f2a',borderWidth:1,titleColor:'#e8ede8',bodyColor:'#a8b0a5',padding:10}
+      }
+    }
+  });
+}
+
+// ── Weekly Bar ──
+function renderWeek(){
+  const labels=[],kcals=[],colors=[];
+  let totalK=0,daysData=0,streak=0,daysHit=0;
+  const today=todayStr();
+  for(let i=6;i>=0;i--){
+    const d=new Date(today+'T12:00:00');
+    d.setDate(d.getDate()-i);
+    const ds=d.toISOString().slice(0,10);
+    const data=getDay(ds);
+    const t=tot(data.foods);
+    labels.push(d.toLocaleDateString('en-IN',{weekday:'short'}));
+    const k=Math.round(t.kcal);
+    kcals.push(k);
+    const hit=k>=TARGETS.kcal*0.9;
+    colors.push(hit?'rgba(181,242,61,0.75)':k>0?'rgba(242,168,61,0.6)':'rgba(42,47,42,0.8)');
+    if(k>0){totalK+=k;daysData++;}
+    if(hit){streak++;daysHit++;}else if(i>0) streak=0;
+  }
+  const avg=daysData?Math.round(totalK/daysData):0;
+  document.getElementById('ws-avg').textContent=avg||'–';
+  document.getElementById('ws-days').textContent=daysHit+'/7';
+  document.getElementById('ws-streak').textContent=streak;
+
+  const ctx2=document.getElementById('weekChart').getContext('2d');
+  if(weekChart) weekChart.destroy();
+  weekChart=new Chart(ctx2,{
+    type:'bar',
+    data:{
+      labels,
+      datasets:[
+        {label:'Calories',data:kcals,backgroundColor:colors,borderRadius:6,borderSkipped:false,order:2},
+        {label:'Target',data:Array(7).fill(TARGETS.kcal),type:'line',borderColor:'rgba(181,242,61,0.4)',borderWidth:1.5,borderDash:[5,5],pointRadius:0,fill:false,tension:0,order:1}
+      ]
+    },
+    options:{
+      responsive:true,maintainAspectRatio:false,
+      plugins:{legend:{display:false},tooltip:{backgroundColor:'#1a1d1a',borderColor:'#2a2f2a',borderWidth:1,titleColor:'#e8ede8',bodyColor:'#a8b0a5',padding:10,callbacks:{label:(c)=>c.dataset.label==='Target'?` Target: ${TARGETS.kcal} kcal`:` ${c.parsed.y} kcal`}}},
+      scales:{
+        x:{ticks:{color:'#6b7368',font:{size:11}},grid:{display:false},border:{color:'#2a2f2a'}},
+        y:{min:0,max:Math.max(...kcals,TARGETS.kcal)*1.2||3000,ticks:{color:'#6b7368',font:{size:11},maxTicksLimit:5},grid:{color:'rgba(42,47,42,0.5)'},border:{color:'#2a2f2a'}}
+      }
+    }
+  });
+}
+
+// ── Actions ──
+function addFood(){
+  const name=document.getElementById('f-name').value.trim();
+  const kcal=parseFloat(document.getElementById('f-kcal').value)||0;
+  const pro=parseFloat(document.getElementById('f-pro').value)||0;
+  const carb=parseFloat(document.getElementById('f-carb').value)||0;
+  const fat=parseFloat(document.getElementById('f-fat').value)||0;
+  if(!name){document.getElementById('f-name').focus();return;}
+  const data=getDay(currentDate);
+  data.foods.push({name,kcal,pro,carb,fat,ts:Date.now()});
+  setDay(currentDate,data);
+  ['f-name','f-kcal','f-pro','f-carb','f-fat'].forEach(id=>document.getElementById(id).value='');
+  renderTracker();
+}
+function delFood(idx){const data=getDay(currentDate);data.foods.splice(idx,1);setDay(currentDate,data);renderTracker();}
+function clearLog(){if(!confirm('Clear all food entries for this day?'))return;const data=getDay(currentDate);data.foods=[];setDay(currentDate,data);renderTracker();}
+function qa(name,kcal,pro,carb,fat){document.getElementById('f-name').value=name;document.getElementById('f-kcal').value=kcal;document.getElementById('f-pro').value=pro;document.getElementById('f-carb').value=carb;document.getElementById('f-fat').value=fat;}
+
+// ── Download PDF ──
+async function downloadPDF(btn){
+  const overlay=document.getElementById('dl-overlay');
+  const msg=document.getElementById('dl-msg');
+  btn.classList.add('loading');
+  overlay.classList.add('show');
+  msg.textContent='Capturing tracker…';
+  try{
+    const el=document.getElementById('tracker-content');
+    const canvas=await html2canvas(el,{backgroundColor:'#0d0f0e',scale:1.5,useCORS:true,logging:false});
+    msg.textContent='Building PDF…';
+    const imgData=canvas.toDataURL('image/jpeg',0.92);
+    const {jsPDF}=window.jspdf;
+    const pdf=new jsPDF({orientation:'portrait',unit:'mm',format:'a4'});
+    const pageW=pdf.internal.pageSize.getWidth();
+    const pageH=pdf.internal.pageSize.getHeight();
+    const ratio=canvas.width/canvas.height;
+    const imgW=pageW-20;
+    const imgH=imgW/ratio;
+    let y=10;
+    if(imgH<=pageH-20){
+      pdf.addImage(imgData,'JPEG',10,y,imgW,imgH);
+    } else {
+      // multi-page
+      let srcY=0;
+      const sliceH=Math.floor(canvas.width*(pageH-20)/imgW);
+      while(srcY<canvas.height){
+        const sliceCanvas=document.createElement('canvas');
+        sliceCanvas.width=canvas.width;
+        sliceCanvas.height=Math.min(sliceH,canvas.height-srcY);
+        const sCtx=sliceCanvas.getContext('2d');
+        sCtx.drawImage(canvas,0,-srcY);
+        const sliceData=sliceCanvas.toDataURL('image/jpeg',0.92);
+        const sH=sliceCanvas.height*imgW/canvas.width;
+        pdf.addImage(sliceData,'JPEG',10,10,imgW,sH);
+        srcY+=sliceH;
+        if(srcY<canvas.height) pdf.addPage();
+      }
+    }
+    const dateStr=currentDate.replace(/-/g,'');
+    pdf.save(`lean-bulk-tracker-${dateStr}.pdf`);
+  }catch(e){alert('PDF generation failed. Please try the Image download instead.');}
+  finally{overlay.classList.remove('show');btn.classList.remove('loading');}
+}
+
+// ── Download Image ──
+async function downloadImage(btn){
+  const overlay=document.getElementById('dl-overlay');
+  const msg=document.getElementById('dl-msg');
+  btn.classList.add('loading');
+  overlay.classList.add('show');
+  msg.textContent='Capturing tracker…';
+  try{
+    const el=document.getElementById('tracker-content');
+    const canvas=await html2canvas(el,{backgroundColor:'#0d0f0e',scale:2,useCORS:true,logging:false});
+    msg.textContent='Saving image…';
+    const link=document.createElement('a');
+    link.download=`lean-bulk-tracker-${currentDate}.png`;
+    link.href=canvas.toDataURL('image/png');
+    link.click();
+  }catch(e){alert('Image export failed. Please try again.');}
+  finally{overlay.classList.remove('show');btn.classList.remove('loading');}
+}
+
+// ── Page + Day Nav ──
+function showPage(id,btn){
+  document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'));
+  document.querySelectorAll('.nav-tab').forEach(t=>t.classList.remove('active'));
+  document.getElementById('page-'+id).classList.add('active');
+  if(btn) btn.classList.add('active');
+  if(id==='tracker') renderTracker();
+  feather.replace();
+}
+function switchDay(day,el){
+  document.querySelectorAll('.meal-plan').forEach(p=>p.classList.remove('active'));
+  document.querySelectorAll('.day-tab').forEach(t=>t.classList.remove('active'));
+  document.getElementById('day-'+day).classList.add('active');
+  if(el) el.classList.add('active');
+}
+
+// ── Enter key ──
+['f-name','f-kcal','f-pro','f-carb','f-fat'].forEach(id=>{
+  const el=document.getElementById(id);
+  if(el) el.addEventListener('keydown',e=>{if(e.key==='Enter') addFood();});
+});
+
+// ── Init ──
+window.addEventListener('load',()=>{
+  feather.replace();
+  currentDate=todayStr();
+  renderMacro({kcal:0,pro:0,carb:0,fat:0});
+  renderWeek();
+});
+</script>
+</body>
+</html>
